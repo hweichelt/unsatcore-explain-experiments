@@ -106,25 +106,58 @@ class DecisionOrderPropagator(Propagator):
     def __int__(self):
         self.decisions = []
         self.prop_step = 1
+        self.l2s = {}
+        self.decisions = []
+        self.entailments = {}
+        self.values =""
+
 
     def init(self, init):
+        self.l2s = {}
+
         print("SOLVER LITERALS:", sorted([init.solver_literal(a.literal) for a in init.symbolic_atoms]))
         for atom in init.symbolic_atoms:
             program_literal = atom.literal
             solver_literal = init.solver_literal(program_literal)
+            self.l2s.setdefault(solver_literal, []).append(str(atom.symbol))
             init.add_watch(solver_literal)
             init.add_watch(-solver_literal)
         self.prop_step = 1
 
+    def get_symbol_rep(self, lit):
+        symbols = []
+        rep = ""
+        prefix = ""
+        if lit<0:
+            lit = -1*lit
+            prefix = "- "
+
+        if lit in self.l2s:
+            symbols = self.l2s[lit]
+        for s in symbols:
+            rep+=prefix + str(s)+"\n"
+
+        return rep
+
+
+    def get_final_ordered_values(self):
+        s = ""
+        for literal in self.decisions:
+            rep = self.get_symbol_rep(literal)
+            s+=rep
+            if literal in self.entailments:
+                for e in self.entailments[literal]:
+                    rep = self.get_symbol_rep(e)
+                    s+=rep
+        return s
+
+
+
     def propagate(self, control, changes):
         decisions, entailments = self.get_decisions(control.assignment)
-        print(f"\nPROPAGATION STEP {self.prop_step}", "-" * 30)
-        self.prop_step += 1
-        for i, literal in enumerate(decisions):
-            final_decision = i == len(decisions) - 1
-            print(f"{'└──' if final_decision else '├──'}({i})", literal)
-            if literal in entailments:
-                print("    └──" if final_decision else "│   └──" , entailments[literal])
+        self.decisions = decisions
+        self.entailments = entailments
+        self.values= self.get_final_ordered_values()
 
     @staticmethod
     def get_decisions(assignment):
