@@ -28,3 +28,5 @@ if __name__ == '__main__':
     print()
     print_leveled_list(sym_decision_levels, name="Solver Decisions")
 
+    print()
+    print("\n".join(sorted([str(s) for s in dop.get_decisions_as_logic_program()])))

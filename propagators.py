@@ -1,3 +1,4 @@
+import clingo
 from clingo.symbol import Function
 from clingo.propagator import Propagator
 from clingo.control import Control
@@ -148,7 +149,7 @@ class DecisionOrderPropagator(Propagator):
             return decisions, entailments
 
     def get_symbolic_decision_levels(self):
-        res = []
+        output = []
         for decision_level in self.decision_levels:
             symbolic_level = []
             for slit in decision_level:
@@ -158,8 +159,28 @@ class DecisionOrderPropagator(Propagator):
                     symbolic_level.append(f"- {str(self._slit_symbol_lookup[-slit])}")
                 else:
                     symbolic_level.append(f"internal_literal({slit})")
-            res.append(symbolic_level)
-        return res
+            output.append(symbolic_level)
+        return output
+
+    def get_decisions_as_logic_program(self):
+        output = []
+        for l, level in enumerate(self.decision_levels):
+            for s, slit in enumerate(level):
+                if slit in self._slit_symbol_lookup:
+                    symbol = self._slit_symbol_lookup[slit]
+                    name = "in_model"
+                elif -slit in self._slit_symbol_lookup:
+                    symbol = self._slit_symbol_lookup[-slit]
+                    name = "not_in_model"
+                else:
+                    continue
+
+                output.append(clingo.parse_term(f"{name}({str(symbol)})"))
+                if s == 0:
+                    output.append(clingo.parse_term(f"decision_order({l}, {str(symbol)})"))
+                else:
+                    output.append(clingo.parse_term(f"entailed_by_decision({l}, {str(symbol)})"))
+        return output
 
 
 class SudokuDecisionOrderPropagator(Propagator):
