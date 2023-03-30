@@ -23,7 +23,8 @@ if __name__ == '__main__':
     ctl.ground([("base", [])])
     print(ctl.solve(on_model=lambda x: print("+ MODEL FOUND:", x)))
     print(dop.decision_levels)
-    sym_decision_levels = dop.get_symbolic_deccision_levels()
+    sym_decision_levels = dop.get_symbolic_decision_levels()
 
     print()
     print_leveled_list(sym_decision_levels, name="Solver Decisions")
+

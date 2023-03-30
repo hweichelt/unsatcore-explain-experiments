@@ -147,7 +147,7 @@ class DecisionOrderPropagator(Propagator):
         except RuntimeError:
             return decisions, entailments
 
-    def get_symbolic_deccision_levels(self):
+    def get_symbolic_decision_levels(self):
         res = []
         for decision_level in self.decision_levels:
             symbolic_level = []
