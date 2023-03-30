@@ -104,27 +104,28 @@ class PigeonHoleOrderPropagator(Propagator):
 class DecisionOrderPropagator(Propagator):
 
     def __int__(self):
-        self.decisions = []
-        self.prop_step = 1
+        self.decision_levels = []
+        self._slit_symbol_lookup = {}
 
     def init(self, init):
+        self._slit_symbol_lookup = {}
         print("SOLVER LITERALS:", sorted([init.solver_literal(a.literal) for a in init.symbolic_atoms]))
         for atom in init.symbolic_atoms:
             program_literal = atom.literal
             solver_literal = init.solver_literal(program_literal)
+            self._slit_symbol_lookup[solver_literal] = atom.symbol
             init.add_watch(solver_literal)
             init.add_watch(-solver_literal)
-        self.prop_step = 1
 
     def propagate(self, control, changes):
         decisions, entailments = self.get_decisions(control.assignment)
-        print(f"\nPROPAGATION STEP {self.prop_step}", "-" * 30)
-        self.prop_step += 1
-        for i, literal in enumerate(decisions):
-            final_decision = i == len(decisions) - 1
-            print(f"{'└──' if final_decision else '├──'}({i})", literal)
-            if literal in entailments:
-                print("    └──" if final_decision else "│   └──" , entailments[literal])
+        self.decision_levels = [[d] + list(entailments[d]) if d in entailments else [d] for d in decisions]
+        print(f"\nPROPAGATION STEP", "-" * 30)
+        # for i, literal in enumerate(decisions):
+        #     final_decision = i == len(decisions) - 1
+        #     print(f"{'└──' if final_decision else '├──'}({i})", literal)
+        #     if literal in entailments:
+        #         print("    └──" if final_decision else "│   └──" , entailments[literal])
 
     @staticmethod
     def get_decisions(assignment):
@@ -145,6 +146,20 @@ class DecisionOrderPropagator(Propagator):
                 level += 1
         except RuntimeError:
             return decisions, entailments
+
+    def get_symbolic_deccision_levels(self):
+        res = []
+        for decision_level in self.decision_levels:
+            symbolic_level = []
+            for slit in decision_level:
+                if slit in self._slit_symbol_lookup:
+                    symbolic_level.append(str(self._slit_symbol_lookup[slit]))
+                elif -slit in self._slit_symbol_lookup:
+                    symbolic_level.append(f"- {str(self._slit_symbol_lookup[-slit])}")
+                else:
+                    symbolic_level.append(f"internal_literal({slit})")
+            res.append(symbolic_level)
+        return res
 
 
 class SudokuDecisionOrderPropagator(Propagator):
