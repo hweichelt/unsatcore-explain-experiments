@@ -120,7 +120,7 @@ class DecisionOrderPropagator(Propagator):
     def propagate(self, control, changes):
         decisions, entailments = self.get_decisions(control.assignment)
         self.decision_levels = [[d] + list(entailments[d]) if d in entailments else [d] for d in decisions]
-        print(f"\nPROPAGATION STEP", "-" * 30)
+        # print(f"\nPROPAGATION STEP", "-" * 30)
         # for i, literal in enumerate(decisions):
         #     final_decision = i == len(decisions) - 1
         #     print(f"{'└──' if final_decision else '├──'}({i})", literal)
