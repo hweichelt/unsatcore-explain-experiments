@@ -1,4 +1,4 @@
-from propagators import DecisionOrderPropagator
+from propagators import DecisionOrderPropagator, DecisionOrderPropagatorSingle
 import clingo
 
 
@@ -17,7 +17,7 @@ def print_leveled_list(leveled_list, name=None):
 if __name__ == '__main__':
 
     ctl = clingo.Control()
-    dop = DecisionOrderPropagator()
+    dop = DecisionOrderPropagatorSingle("place(2,2)")
     ctl.register_propagator(dop)
     ctl.load("logic_programs/pigeon_hole.lp")
     ctl.ground([("base", [])])

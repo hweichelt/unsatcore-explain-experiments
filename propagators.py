@@ -183,6 +183,29 @@ class DecisionOrderPropagator(Propagator):
         return output
 
 
+class DecisionOrderPropagatorSingle(DecisionOrderPropagator):
+
+    def __init__(self, query_atom):
+        self.query_atom = clingo.parse_term(query_atom)
+
+    def init(self, init):
+        self._slit_symbol_lookup = {}
+        print(f"SINGLE D.O. PROPAGATOR: query_atom='{str(self.query_atom)}'")
+        print("SOLVER LITERALS:", sorted([init.solver_literal(a.literal) for a in init.symbolic_atoms]))
+        for atom in init.symbolic_atoms:
+            program_literal = atom.literal
+            solver_literal = init.solver_literal(program_literal)
+            self._slit_symbol_lookup[solver_literal] = atom.symbol
+
+        if self.query_atom in init.symbolic_atoms:
+            program_literal = init.symbolic_atoms[self.query_atom].literal
+            solver_literal = init.solver_literal(program_literal)
+            init.add_watch(solver_literal)
+            init.add_watch(-solver_literal)
+        else:
+            raise ValueError("query_atom has to be a valid atom contained in init.symbolic_atoms")
+
+
 class SudokuDecisionOrderPropagator(Propagator):
 
     def __init__(self):
