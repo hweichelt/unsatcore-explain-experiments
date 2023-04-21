@@ -203,32 +203,3 @@ class DecisionOrderPropagatorSingle(DecisionOrderPropagator):
             init.add_watch(-solver_literal)
         else:
             raise ValueError("query_atom has to be a valid atom contained in init.symbolic_atoms")
-
-
-class SudokuDecisionOrderPropagator(Propagator):
-
-    def __init__(self):
-        self.order = []
-        self.state = []
-        self.literal_to_symbol = {}
-        self.watch_signature = ("sudoku", 3)
-
-    def init(self, init) -> None:
-        for atom in init.symbolic_atoms.by_signature(self.watch_signature[0], self.watch_signature[1]):
-            program_literal = atom.literal
-            solver_literal = init.solver_literal(program_literal)
-            self.literal_to_symbol[solver_literal] = atom.symbol
-            init.add_watch(solver_literal)
-        self.state = [{} for _ in range(init.number_of_threads)]
-
-    def propagate(self, control, changes) -> None:
-        print(control.thread_id, "PROP", changes)
-        # holes = self.state[control.thread_id]
-        for solver_literal in changes:
-            print("-", solver_literal, ":", self.literal_to_symbol[solver_literal])
-
-    def undo(self, thread_id: int, assignment, changes) -> None:
-        print(thread_id, "UNDO", changes)
-        # holes = self.state[thread_id]
-        for solver_literal in changes:
-            print("-", solver_literal, ":", self.literal_to_symbol[solver_literal])
