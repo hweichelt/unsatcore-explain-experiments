@@ -104,7 +104,7 @@ class PigeonHoleOrderPropagator(Propagator):
 
 class DecisionOrderPropagator(Propagator):
 
-    def __int__(self):
+    def __init__(self):
         self.decision_levels = []
         self._slit_symbol_lookup = {}
 
@@ -184,7 +184,6 @@ class DecisionOrderPropagator(Propagator):
 
 
 class DecisionOrderPropagatorSingle(DecisionOrderPropagator):
-
     def __init__(self, query_atom):
         self.query_atom = clingo.parse_term(query_atom)
 
